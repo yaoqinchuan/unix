@@ -26,16 +26,16 @@ int main(int argc, char **arg)
 
     char temp_char[1024] = {0};
     printf("Please input string:\r\n");
-    if(fgets(temp_char, 1024, stdin)!= NULL) {
+    while(fgets(temp_char, 1024, stdin)!= NULL) {
         if (write(sockfd, temp_char, strlen(temp_char)) == -1) {
             printf("Error:Send message to server failed!\r\n");
         }
-    }
-    int n =0;
-    char buf[1024] = {0};
-    if ((n = read(sockfd,buf, 1024)) > 0) {
-        buf[n] = 0;
-        printf("%s", buf);
+        int n =0;
+        char buf[1024] = {0};
+        if ((n = read(sockfd,buf, 1024)) > 0) {
+            buf[n] = 0;
+            printf("%s", buf);
+        }
     }
     printf("end");
     close(sockfd);

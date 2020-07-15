@@ -76,8 +76,6 @@ int main()
                 {
                     perror("add epoll failed:");
                 };
-                char welconme_str[] = "hello";
-                write(connfd, welconme_str, sizeof(welconme_str));
             }
             else
             {
