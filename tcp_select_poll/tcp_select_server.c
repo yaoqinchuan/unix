@@ -31,7 +31,7 @@ int main()
     {
         fd_arr[i] = -1;
     }
-    timeout.tv_sec = 5;
+    timeout.tv_sec = 30;
     timeout.tv_usec = 0;
     int maxi = 0;
     init_tcp_server(&sockfd);
