@@ -5,6 +5,25 @@
 #define TCP_WAIT_COUNT 1024
 #define SELECT_COUNT 2048
 #define MAX_BUF_LEN 2048
+void sig_child(int signo)
+{
+    pid_t pid;
+    int stat;
+    if ((pid = waitpid(pid, &stat, WNOHANG) > 0)) {
+        printf("child %d terminated.\r\n",pid);
+    }
+    return;
+}
+Sigfunc *signal(int signo, Sigfunc *func) {
+    struct sigaction act, oact;
+    act.sa_handler = func;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    if (sigaction(signo, &act, &oact) < 0) {
+        return SIG_ERR;
+    }
+    return oact.sa_handler;
+}
 int init_tcp_udp_socket_fd(int *tcp_socket_fd, int *udp_socket_fd)
 {
     struct sockaddr_in client_ip = {0};
@@ -65,6 +84,7 @@ int main()
     int index = 1;
     flag[0] = tcp_socket_fd;
     map_index = (tcp_socket_fd > udp_socket_fd ? tcp_socket_fd : udp_socket_fd);
+    (void)signal(SIGCHLD, sig_child);
     while (1)
     {
         r_fd_set = all_fd_set;
@@ -97,6 +117,7 @@ int main()
             }
         }
 
+        // for tcp proc
         for (int i = 0; i <= index; i++)
         {
             if (flag[i] < 0)
@@ -124,6 +145,7 @@ int main()
             }
         }
 
+        // for udp use
         if (FD_ISSET(udp_socket_fd, &r_fd_set))
         {
             char r_buf[MAX_BUF_LEN] = {0};
