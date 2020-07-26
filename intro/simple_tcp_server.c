@@ -38,5 +38,4 @@ int main()
         printf("remote ip version is %s.\r\n", (remote_ip_main.sin_family == AF_INET ? "4" : "6"));
         close(connnfd);
     }
-    
 }

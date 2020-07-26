@@ -11,11 +11,17 @@
 
 #define SERVER_PORT_NUM 19000
 #define MAX_BUF_LEN 2048
+#define MAX_STREAM_OUT_NUM 15
 #define OK 0
 #define ERR 1
-static int init_socket(int *socket_fd, struct sockaddr_in *server_ip, struct sctp_event_subscribe *evnts)
+static int init_socket(int *socket_fd, struct sockaddr_in *server_ip)
 {
     char server_ip_str[] = "127.0.0.1";
+    struct sctp_event_subscribe evnts = {0};
+    evnts.sctp_data_io_event = 1;
+
+    struct sctp_initmsg init = {0};
+    init.sinit_num_ostreams = MAX_STREAM_OUT_NUM;
     if (inet_pton(AF_INET, server_ip_str, (void *)&(server_ip->sin_addr)) < 0)
     {
         perror("IP transform failed.");
@@ -28,6 +34,17 @@ static int init_socket(int *socket_fd, struct sockaddr_in *server_ip, struct sct
         perror("Socket create failed.");
         return ERR;
     }
+    if (setsockopt(*socket_fd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts)) < 0)
+    {
+        perror("Setsockopt event failed.");
+        return ERR;
+    }
+    if (setsockopt(*socket_fd, IPPROTO_SCTP, SCTP_INITMSG, &init, sizeof(init)) < 0)
+    {
+        perror("Setsockopt init failed.");
+        return ERR;
+    }
+    
     return OK;
 }
 
@@ -40,20 +57,15 @@ int main(int argc, char **arg)
     int start_stream_id = atoi(arg[1]);
     int sock_fd = 0;
     struct sockaddr_in server_ip = {0};
-    struct sctp_event_subscribe evnts = {0};
     struct sctp_sndrcvinfo sinfo = {0};
     struct sockaddr_in rcv_peer_addr = {0};
     struct sctp_sndrcvinfo rcv_sinfo = {0};
-    if (init_socket(&sock_fd, &server_ip, &evnts) != OK)
+
+    if (init_socket(&sock_fd, &server_ip) != OK)
     {
         return OK;
     }
-    evnts.sctp_data_io_event = 1;
-    if (setsockopt(sock_fd, IPPROTO_SCTP, SCTP_EVENTS, &evnts, sizeof(evnts)) < 0)
-    {
-        perror("Setsockopt failed.");
-        return OK;
-    }
+
     sinfo.sinfo_stream = start_stream_id;
     printf("Send stream num is : %d\r\n", start_stream_id);
     while (1)
@@ -63,9 +75,9 @@ int main(int argc, char **arg)
         {
             continue;
         }
-        if (sinfo.sinfo_stream >= 10)
+        if (sinfo.sinfo_stream >= MAX_STREAM_OUT_NUM - 1)
         {
-            sinfo.sinfo_stream = 1;
+            sinfo.sinfo_stream = 0;
         }
         printf("Message send: %s\r\n", buf);
         printf("Sock fd is: %d\r\n", sock_fd);
