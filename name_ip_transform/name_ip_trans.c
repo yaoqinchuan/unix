@@ -47,7 +47,8 @@ void test_gethostbyname(void)
         printf("\r\n The address host is:%s.", inet_ntop(host_info->h_addrtype, *IPV4_point, buf, sizeof(buf)));
         IPV4_point++;
     }
-    free(host_info);
+    printf("\r\n ");
+    return;
 }
 void test_gethostbyaddr(void)
 {
@@ -172,6 +173,7 @@ static void test_getaddrinfo(void)
     char hostname[MAX_BUF_SIZE] = {0};
     char server[MAX_BUF_SIZE] = {0};
     struct addrinfo *ad_info = NULL;
+    struct addrinfo *ad_info_temp = NULL;
     while (1)
     {
         scanf("%s %s", hostname, server);
@@ -185,6 +187,7 @@ static void test_getaddrinfo(void)
         }
         printf("Invalid input parameters,please input port and protocal again:");
     }
+    ad_info_temp = ad_info;
     do {
         char ip_buf[MAX_BUF_SIZE] ={0};
         struct sockaddr_in *ip_in = NULL;
@@ -196,6 +199,7 @@ static void test_getaddrinfo(void)
         ad_info = ad_info->ai_next;
         printf("\r\n");
     }while (ad_info != NULL);
+    freeaddrinfo(ad_info_temp);
 }
 
 name_ip_node func_tbl[] = {

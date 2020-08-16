@@ -60,7 +60,7 @@ int main(int argc, char **arg)
     int msg_flag = 0;
     struct sockaddr_in client_ip = {0};
     struct sctp_sndrcvinfo sinfo = {0};
-
+    sinfo.sinfo_flags = MSG_EOR;
     if (argc == 2)
     {
         stream_increment = atoi(arg[1]);
